@@ -3,11 +3,14 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { ArticleFeature } from "./article-feature.entity";
+import { Article } from "./article.entity";
 import { Category } from "./category.entity";
 
 @Index("fk_feature_category_id", ["categoryId"], {})
@@ -16,7 +19,7 @@ import { Category } from "./category.entity";
 export class Feature {
   @PrimaryGeneratedColumn({ type: "int", name: "feature_id", unsigned: true })
   featureId: number;
-
+ 
   @Column("varchar", { name: "name", length: 32 })
   name: string;
 
@@ -25,6 +28,15 @@ export class Feature {
 
   @OneToMany(() => ArticleFeature, (articleFeature) => articleFeature.feature)
   articleFeatures: ArticleFeature[];
+
+    // dodaj "inverse" da kada gledam article, ne vidim articlefaetureId nego da mi pise koji je to feature
+    @ManyToMany(type => Article, article => article.features)
+    @JoinTable({
+      name: "article_feature",
+      joinColumn: {name: "feature_id", referencedColumnName: "featureId"}, 
+      inverseJoinColumn: {name: "article_id", referencedColumnName: "articleId" }
+    })
+    articles: Article[];
 
   @ManyToOne(() => Category, (category) => category.features, {
     onDelete: "RESTRICT",
