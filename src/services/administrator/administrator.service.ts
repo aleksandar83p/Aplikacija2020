@@ -20,6 +20,18 @@ export class AdministratorService {
         return this.administrator.find(); //.find je metoda typeorm-a
     }
 
+    async getByUsername(usernameString: string): Promise <Administrator | null>{
+        const admin = await this.administrator.findOne({
+            username: usernameString
+        });
+
+        if(admin){
+            return admin;
+        }
+
+        return null;
+    }
+
     getById(id: number): Promise<Administrator>{
         return this.administrator.findOne(id);
     }
