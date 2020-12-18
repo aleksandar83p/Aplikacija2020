@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Param, Post, Req, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Crud } from "@nestjsx/crud";
 import { StorageConfig } from "config/storage.config";
@@ -90,13 +90,16 @@ export class ArticleController{
             fileFilter: (req, file, callback) => {
                 // 1. proveri extenziju: JPG, PNG           
                 if(!file.originalname.toLowerCase().match(/\.(jpg|png)$/)){
-                    callback(new Error('Bad file extensions!'), false);
+                    // callback(new Error('Bad file extensions!'), false); // callback sluzi da dojavimo gresku koja je nastala ali na konzoli, false ne prihvati upload fajla
+                    req.fileFilterError = 'Bad file extensions!';  // .fileFilterError sam ja napravio, nije vec postojece polje
+                    callback(null, false);
                     return;
                 }
 
                 // 2. Check tipa sadrzaja: image/jpeg, image/png (mimetype)
                 if(!(file.mimetype.includes('jpeg') || file.mimetype.includes('png'))){
-                    callback(new Error('Bad file content!'), false);
+                    req.fileFilterError ='Bad file content!';
+                    callback(null, false);
                     return;
                 }
 
@@ -108,7 +111,21 @@ export class ArticleController{
             },
         })
     )
-    async uploadPhoto(@Param('id') articleId: number, @UploadedFile() photo) : Promise<ApiResponse | Photo>{
+    async uploadPhoto(
+        @Param('id') articleId: number,
+        @UploadedFile() photo,
+        @Req() req
+    ): Promise<ApiResponse | Photo>{
+        // prikazi gresku klijentu
+        if(req.fileFilterError){
+            return new ApiResponse('error', -4002, req.fileFilterError);
+        }
+
+        // ako nema uploadovanog fajla
+        if(!photo){
+            return new ApiResponse('error', -4002, 'File not uploaded');
+        }
+
         const newPhoto: Photo = new Photo();
         newPhoto.articleId = articleId;
         newPhoto.photoPath = photo.filename;
