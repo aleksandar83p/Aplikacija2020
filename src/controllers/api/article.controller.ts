@@ -9,6 +9,9 @@ import {diskStorage} from "multer";
 import { Photo } from "entities/photo.entity";
 import { PhotoService } from "src/services/photo/photo.service";
 import { ApiResponse } from "src/misc/api.response.class";
+import * as fileType from "file-type";
+import * as fs from "fs";
+import * as sharp from "sharp";
 
 @Controller('api/article')
 @Crud({
@@ -126,6 +129,31 @@ export class ArticleController{
             return new ApiResponse('error', -4002, 'File not uploaded');
         }
 
+        // mime type da ne okacim blabla.exe.jpg
+        const fileTypeResult = await fileType.fromFile(photo.path);
+
+        if(!fileTypeResult){
+            //  obrisi taj fajl
+            fs.unlinkSync(photo.path);
+
+            return new ApiResponse('error', -4002, 'Cannot detect file type');
+        }
+
+        const realMimeType = fileTypeResult.mime;
+
+        if(!(realMimeType.includes('jpeg') || realMimeType.includes('png'))){
+             // obrisi taj fajl
+             fs.unlinkSync(photo.path);
+             
+             return new ApiResponse('error', -4002, 'Bad file content type');
+        }
+
+        // Save a resized file
+        await this.createThumb(photo);
+        await this.createSmallImage(photo);
+
+
+
         const newPhoto: Photo = new Photo();
         newPhoto.articleId = articleId;
         newPhoto.photoPath = photo.filename;
@@ -137,5 +165,48 @@ export class ArticleController{
         }
 
         return savedPhoto;
+    }
+
+    // npm i sharp
+    async createThumb(photo){
+        const originalFilePath = photo.path;
+        const fileName = photo.filename;
+
+        const destinationFilePath = StorageConfig.photoDestination + "thumb/" + fileName;
+        
+        await sharp(originalFilePath)
+        .resize({
+            fit: 'contain', //dodace beline da ostane isti acept ration, 'cover' brise
+            width: StorageConfig.photoThumbSize.width,
+            height: StorageConfig.photoThumbSize.height,
+            background:{
+                r:255,
+                g: 255,
+                b: 255,
+                alpha: 0.0 // ako je png onda ce biti providno jer je alfa 0.0 a ako je jpg ostace belo
+            }
+        })
+        .toFile(destinationFilePath);
+    }
+
+    async createSmallImage(photo){
+        const originalFilePath = photo.path;
+        const fileName = photo.filename;
+
+        const destinationFilePath = StorageConfig.photoDestination + "small/" + fileName;
+        
+        await sharp(originalFilePath)
+        .resize({
+            fit: 'contain', //dodace beline da ostane isti acept ration, 'cover' brise
+            width: StorageConfig.photoSmallSize.width,
+            height: StorageConfig.photoSmallSize.height,
+            background:{
+                r:255,
+                g: 255,
+                b: 255,
+                alpha: 0.0 // ako je png onda ce biti providno jer je alfa 0.0 a ako je jpg ostace belo
+            }
+        })
+        .toFile(destinationFilePath);
     }
 }
