@@ -79,8 +79,9 @@ import { UserService } from './services/user/user.service';
     FeatureService,
     UserService
   ],
-  exports: [ // lekcija 46, minut 23
-    AdministratorService
+  exports: [ // lekcija 46, minut 23... exportujem da mi mogao middleware da koristi
+    AdministratorService,
+    UserService
   ]
 })
 export class AppModule implements NestModule{
