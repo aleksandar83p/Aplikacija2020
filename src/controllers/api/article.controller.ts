@@ -48,7 +48,24 @@ import { RoleCheckerGuard } from "src/misc/role.checker.guard";
         }
     },
     routes:{
-        exclude:['updateOneBase', 'replaceOneBase', 'deleteOneBase'] // crud automatski vise ne pravi sledece metode: PATCH-updateOneBase, PUT-replaceOneBase, DELETE-deleteOneBase
+        // imamo vise sto ne koristimo nego koristimo onda ide only: 
+        //exclude:['updateOneBase', 'replaceOneBase', 'deleteOneBase'] // crud automatski vise ne pravi sledece metode: PATCH-updateOneBase, PUT-replaceOneBase, DELETE-deleteOneBase
+        only: [
+            'getOneBase',
+            'getManyBase'
+        ],
+        getOneBase: {
+            decorators:[
+                UseGuards(RoleCheckerGuard),
+                AllowToRoles('administrator', 'user')
+            ]
+        },
+        getManyBase:{
+            decorators:[
+                UseGuards(RoleCheckerGuard),
+                AllowToRoles('administrator', 'user')
+            ]
+        }
     },
 })
 
@@ -60,7 +77,8 @@ export class ArticleController{
 
     @UseGuards(RoleCheckerGuard)
     @AllowToRoles('administrator')
-    @Post('createFull') // POST http://localhost:3000/api/article/createFull
+    //@Post('createFull') POST http://localhost:3000/api/article/createFull
+    @Post() // POST http://localhost:3000/api/article/
     createFullArticle(@Body() data: AddArticleDto){
         return this.service.createFullArticle(data);
     }
