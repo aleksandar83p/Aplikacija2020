@@ -11,7 +11,7 @@ export class JwtDataDto{
             role: this.role,
             id: this.id, 
             identity: this.identity,
-            ext: this.exp,
+            exp: this.exp,
             ip: this.ip,
             ua: this.ua
         }
