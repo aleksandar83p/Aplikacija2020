@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Article } from "src/entities/article.entity";
 import { CartArticle } from "src/entities/cart-article.entity";
 import { Cart } from "src/entities/cart.entity";
-import { Order } from "src/entities/order.entity";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -13,13 +11,7 @@ export class CartService {
         private readonly cart: Repository<Cart>, 
 
         @InjectRepository(CartArticle)
-        private readonly cartArticle: Repository<CartArticle>, 
-
-        @InjectRepository(Article)
-        private readonly article: Repository<Article>, 
-
-        @InjectRepository(Order)
-        private readonly order: Repository<Order>, 
+        private readonly cartArticle: Repository<CartArticle>     
     ){}
 
     async getLastActiveCartByUserId(userId: number): Promise <Cart | null>{
@@ -80,7 +72,8 @@ export class CartService {
                 "user",
                 "cartArticles",
                 "cartArticles.article",
-                "cartArticles.article.category"
+                "cartArticles.article.category",
+                "cartArticles.article.articlePrices"
             ]
         });
     }
