@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Cart } from "./cart.entity";
+import * as Validator from "class-validator";
 
 @Index("uq_user_email", ["email"], { unique: true })
 @Index("uq_user_phone_number", ["phoneNumber"], { unique: true })
@@ -19,18 +20,32 @@ export class User {
     unique: true,
     length: 255,
   })
+  @Validator.IsNotEmpty()
+  @Validator.IsEmail({
+    allow_ip_domain: false,  // sale@127.0.0.1
+    allow_utf8_local_part: true,
+    require_tld: true // ne moze sale@localhost, mora imati .com i slicno .pa_nesto
+  })
   email: string;
 
   @Column("varchar", {
     name: "password_hash",
     length: 128,
   })
+  @Validator.IsNotEmpty()
+  @Validator.IsHash('sha512')
   passwordHash: string;
 
   @Column("varchar", { name: "forename", length: 64})
+  @Validator.IsNotEmpty()
+  @Validator.IsString()
+  @Validator.Length(2, 64)
   forename: string;
 
   @Column("varchar", { name: "surename", length: 64 })
+  @Validator.IsNotEmpty()
+  @Validator.IsString()
+  @Validator.Length(2, 64)
   surename: string;
 
   @Column("varchar", {
@@ -38,9 +53,14 @@ export class User {
     unique: true,
     length: 24
   })
+  @Validator.IsNotEmpty()
+  @Validator.IsPhoneNumber(null)  // region je null, mora +381...
   phoneNumber: string;
 
   @Column("text", { name: "postal_address" })
+  @Validator.IsNotEmpty()
+  @Validator.IsString()
+  @Validator.Length(10, 512)
   postalAddress: string;
 
   @OneToMany(() => Cart, (cart) => cart.user)
