@@ -18,7 +18,7 @@ export class Administrator {
   })
   @Validator.IsNotEmpty()
   @Validator.IsString()
-  @Validator.Matches(/^[a-z][a-z0-9\.]{3, 30}[a-z0-9]$/) // 11 minut
+ // @Validator.Matches(/^[a-z][a-z0-9\.]{3, 30}[a-z0-9]$/) // 11 minut
   username: string;
 
   @Column("varchar", {
