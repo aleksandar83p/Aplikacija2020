@@ -35,7 +35,7 @@ export class UserService extends TypeOrmCrudService<User>{
 
             return savedUser;
         } catch(e){
-            return new ApiResponse('error', -6001, 'This user account cannot be created');
+            return new ApiResponse('error', -6001, 'This user account cannot be created' + e,);            
         }
     }
 
